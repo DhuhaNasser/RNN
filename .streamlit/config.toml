@@ -1,5 +1,11 @@
 [server]
 headless = true
 
+[theme]
+base = "light"
+
+[browser]
+gatherUsageStats = false
+
 [general]
 mainModule = "RNN/seizure_detection_app.py"
