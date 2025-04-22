@@ -1,0 +1,5 @@
+[server]
+headless = true
+
+[general]
+mainModule = "streamlit_app.py"
