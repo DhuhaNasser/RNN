@@ -24,7 +24,7 @@ db = firestore.client()
 # -------------------- CONSTANTS --------------------
 SEQUENCE_LENGTH = 30
 IMAGE_SIZE = (224, 224)
-MODEL_PATH = "RNN/models/seizure_lstm_model.h5"
+MODEL_PATH = "models/seizure_lstm_model.h5"
 
 # -------------------- DATABASE CLASS --------------------
 class SeizureDatabase:
