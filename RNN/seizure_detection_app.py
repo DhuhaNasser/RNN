@@ -185,7 +185,7 @@ def main():
     if uploaded_file:
         temp_dir = "temp"
         os.makedirs(temp_dir, exist_ok=True)
-        video_path = os.path.join(temp_dir, uploaded_file.name)
+        load_model(MODEL_PATH, custom_objects={'LSTM': custom_lstm_layer})
 
         with open(video_path, "wb") as f:
             f.write(uploaded_file.getbuffer())
