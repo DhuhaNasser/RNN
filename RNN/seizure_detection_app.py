@@ -16,7 +16,7 @@ tf.config.run_functions_eagerly(True)
 
 # -------------------- SETUP --------------------
 if not firebase_admin._apps:
-    cred = credentials.Certificate("RNN/resources/serviceAccountKey.json")
+    cred = credentials.Certificate(os.path.join(os.path.dirname(__file__), "resources", "serviceAccountKey.json"))
     firebase_admin.initialize_app(cred)
 
 db = firestore.client()
@@ -116,16 +116,16 @@ def create_sequences(frames):
 def extract_features(sequences, feature_extractor):
     if not sequences:
         return np.array([])
-    
+
     sequences = np.array(sequences, dtype=np.float32)
     batch_size, seq_len, h, w, c = sequences.shape
     features = []
-    
+
     for seq in sequences:
         flat = seq.reshape(-1, h, w, c)
         feat = feature_extractor.predict(flat, verbose=0)
         features.append(feat.reshape(seq_len, -1))
-    
+
     return np.array(features, dtype=np.float32)
 
 # -------------------- PREDICTION --------------------
@@ -198,7 +198,7 @@ def main():
             with st.spinner("Analyzing video..."):
                 result, label, confidence = predict_seizure(
                     video_path, model, feature_extractor, seizure_db)
-            
+
             if label:
                 st.success(result)
                 st.metric("Prediction", label)
