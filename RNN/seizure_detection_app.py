@@ -11,6 +11,9 @@ from tensorflow.keras import Sequential
 import firebase_admin
 from firebase_admin import credentials, firestore
 
+# Increase upload size limit
+st.set_option("server.maxUploadSize", 1024)
+
 # Ensure TensorFlow is running in eager mode
 tf.config.run_functions_eagerly(True)
 
@@ -93,7 +96,7 @@ def load_feature_extractor():
     model.predict(dummy_img, verbose=0)
     return model
 
-# -------------------- VIDEO PROCESSING (Optimized) --------------------
+# -------------------- VIDEO PROCESSING --------------------
 def extract_limited_frames(video_path, max_frames=90, step=3):
     st.write("📹 Extracting frames from video...")
     cap = cv2.VideoCapture(video_path)
@@ -121,7 +124,7 @@ def create_sequences(frames, max_sequences=3):
         for i in range(0, len(frames) - SEQUENCE_LENGTH + 1, SEQUENCE_LENGTH)
     ]
     st.write(f"📊 Generated {len(sequences)} sequences")
-    return sequences[:max_sequences]  # Limit to avoid overload
+    return sequences[:max_sequences]
 
 def extract_features(sequences, feature_extractor):
     if not sequences:
@@ -140,6 +143,7 @@ def extract_features(sequences, feature_extractor):
     st.write("✅ Feature extraction done")
     return np.array(features, dtype=np.float32)
 
+# -------------------- PREDICTION --------------------
 def predict_seizure(video_path, model, feature_extractor, db):
     try:
         frames = extract_limited_frames(video_path)
@@ -169,37 +173,6 @@ def predict_seizure(video_path, model, feature_extractor, db):
 
     except Exception as e:
         return f"❌ Error during prediction: {str(e)}", None, None
-
-
-# -------------------- PREDICTION --------------------
-def predict_seizure(video_path, model, feature_extractor, db):
-    try:
-        frames = extract_frames(video_path)
-        if len(frames) < SEQUENCE_LENGTH:
-            return "Error: Video too short (needs at least 30 frames)", None, None
-
-        sequences = create_sequences(frames)
-        if not sequences:
-            return "Error: Could not create sequences", None, None
-
-        features = extract_features(sequences, feature_extractor)
-        if features.size == 0:
-            return "Error: Feature extraction failed", None, None
-
-        preds = model.predict(features, verbose=0)
-        avg_pred = np.mean(preds, axis=0)
-        class_idx = int(np.argmax(avg_pred))
-
-        # Manual label map
-        label_map = {0: 'No_Seizure', 1: 'P', 2: 'PG'}
-        label = label_map.get(class_idx, str(class_idx))
-        confidence = float(avg_pred[class_idx])
-
-        db.add_prediction(video_path, label, confidence)
-        return f"Prediction: {label} (Confidence: {confidence:.2%})", label, confidence
-
-    except Exception as e:
-        return f"Error during prediction: {str(e)}", None, None
 
 # -------------------- STREAMLIT APP --------------------
 def main():
