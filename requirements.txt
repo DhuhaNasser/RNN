@@ -6,4 +6,5 @@ matplotlib
 seaborn
 thefuzz
 pandas
+firebase-admin
 
