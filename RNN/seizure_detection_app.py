@@ -11,8 +11,6 @@ from tensorflow.keras import Sequential
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-# Increase upload size limit
-st.set_option("server.maxUploadSize", 1024)
 
 # Ensure TensorFlow is running in eager mode
 tf.config.run_functions_eagerly(True)
