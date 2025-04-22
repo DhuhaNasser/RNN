@@ -2,4 +2,4 @@
 headless = true
 
 [general]
-mainModule = "streamlit_app.py"
+mainModule = "RNN/streamlit_app.py"
