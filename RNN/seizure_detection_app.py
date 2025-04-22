@@ -11,13 +11,12 @@ from tensorflow.keras import Sequential
 import firebase_admin
 from firebase_admin import credentials, firestore
 
+# Ensure TensorFlow is running in eager mode
 tf.config.run_functions_eagerly(True)
 
 # -------------------- SETUP --------------------
-FIREBASE_KEY_PATH = os.path.join("RNN", "resources", "serviceAccountKey.json")
-
 if not firebase_admin._apps:
-    cred = credentials.Certificate(FIREBASE_KEY_PATH)
+    cred = credentials.Certificate("resources/serviceAccountKey.json")
     firebase_admin.initialize_app(cred)
 
 db = firestore.client()
@@ -25,7 +24,7 @@ db = firestore.client()
 # -------------------- CONSTANTS --------------------
 SEQUENCE_LENGTH = 30
 IMAGE_SIZE = (224, 224)
-MODEL_PATH = os.path.join("RNN", "models", "seizure_lstm_model.h5")
+MODEL_PATH = os.path.join("models", "seizure_lstm_model.h5")
 
 # -------------------- DATABASE CLASS --------------------
 class SeizureDatabase:
@@ -80,7 +79,11 @@ def load_seizure_model():
 # -------------------- FEATURE EXTRACTOR --------------------
 @st.cache_resource
 def load_feature_extractor():
-    base_model = MobileNetV2(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
+    base_model = MobileNetV2(
+        weights='imagenet',
+        include_top=False,
+        input_shape=(224, 224, 3)
+    )
     base_model.trainable = False
     model = Sequential([
         base_model,
@@ -105,7 +108,10 @@ def extract_frames(video_path):
     return frames
 
 def create_sequences(frames):
-    return [frames[i:i + SEQUENCE_LENGTH] for i in range(0, len(frames) - SEQUENCE_LENGTH + 1, SEQUENCE_LENGTH)]
+    return [
+        frames[i:i + SEQUENCE_LENGTH]
+        for i in range(0, len(frames) - SEQUENCE_LENGTH + 1, SEQUENCE_LENGTH)
+    ]
 
 def extract_features(sequences, feature_extractor):
     if not sequences:
@@ -171,7 +177,10 @@ def main():
     st.title("⚡ Seizure Detection from Video")
     st.markdown("Upload a video file to analyze for seizure activity.")
 
-    uploaded_file = st.file_uploader("Choose a video file", type=["mp4", "avi", "mov"])
+    uploaded_file = st.file_uploader(
+        "Choose a video file", 
+        type=["mp4", "avi", "mov"]
+    )
 
     if uploaded_file:
         temp_dir = "temp"
@@ -187,7 +196,8 @@ def main():
 
         with col2:
             with st.spinner("Analyzing video..."):
-                result, label, confidence = predict_seizure(video_path, model, feature_extractor, seizure_db)
+                result, label, confidence = predict_seizure(
+                    video_path, model, feature_extractor, seizure_db)
 
             if label:
                 st.success(result)
@@ -206,7 +216,11 @@ def main():
         history = seizure_db.get_predictions()
         if not history.empty:
             st.sidebar.dataframe(history)
-            st.sidebar.download_button("Download CSV", history.to_csv(index=False), "seizure_history.csv")
+            st.sidebar.download_button(
+                "Download CSV",
+                history.to_csv(index=False),
+                "seizure_history.csv"
+            )
         else:
             st.sidebar.info("No history available")
 
