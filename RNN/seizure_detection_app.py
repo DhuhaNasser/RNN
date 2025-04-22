@@ -16,7 +16,7 @@ tf.config.run_functions_eagerly(True)
 
 # -------------------- SETUP --------------------
 if not firebase_admin._apps:
-    cred = credentials.Certificate("resources/serviceAccountKey.json")
+    cred = credentials.Certificate("RNN/resources/serviceAccountKey.json")
     firebase_admin.initialize_app(cred)
 
 db = firestore.client()
