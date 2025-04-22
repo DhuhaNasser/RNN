@@ -1,9 +1,0 @@
-streamlit
-tensorflow
-opencv-python
-numpy
-matplotlib
-seaborn
-thefuzz
-firebase-admin
-
