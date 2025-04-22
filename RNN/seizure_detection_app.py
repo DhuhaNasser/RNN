@@ -24,7 +24,7 @@ db = firestore.client()
 # -------------------- CONSTANTS --------------------
 SEQUENCE_LENGTH = 30
 IMAGE_SIZE = (224, 224)
-MODEL_PATH = os.path.join("models", "RNN/models/seizure_lstm_model.h5")
+MODEL_PATH = "RNN/models/seizure_lstm_model.h5"
 
 # -------------------- DATABASE CLASS --------------------
 class SeizureDatabase:
@@ -147,7 +147,6 @@ def predict_seizure(video_path, model, feature_extractor, db):
         avg_pred = np.mean(preds, axis=0)
         class_idx = int(np.argmax(avg_pred))
 
-        # Manual label map
         label_map = {0: 'No_Seizure', 1: 'P', 2: 'PG'}
         label = label_map.get(class_idx, str(class_idx))
         confidence = float(avg_pred[class_idx])
