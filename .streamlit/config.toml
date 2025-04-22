@@ -1,5 +1,6 @@
 [server]
 headless = true
+maxUploadSize = 1024
 
 [theme]
 base = "light"
@@ -7,10 +8,5 @@ base = "light"
 [browser]
 gatherUsageStats = false
 
-[server]
-headless = true
-maxUploadSize = 1024
-
 [general]
 mainModule = "RNN/seizure_detection_app.py"
-
