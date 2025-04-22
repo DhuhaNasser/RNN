@@ -8,4 +8,4 @@ base = "light"
 gatherUsageStats = false
 
 [general]
-mainModule = "RNN/seizure_detection_app.py"
+
