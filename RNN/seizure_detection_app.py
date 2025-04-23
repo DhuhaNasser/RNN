@@ -26,50 +26,38 @@ SEQUENCE_LENGTH = 30
 IMAGE_SIZE = (224, 224)
 MODEL_PATH = os.path.join("models", "seizure_lstm_model.h5")
 
-# -------------------- DATABASE CLASS --------------------
+import csv
+
+# -------------------- LOCAL DATABASE CLASS --------------------
 class SeizureDatabase:
-    def __init__(self):
-        self.collection = db.collection('seizure_predictions')
+    def __init__(self, csv_path="seizure_history.csv"):
+        self.csv_path = csv_path
+        if not os.path.exists(self.csv_path):
+            with open(self.csv_path, mode='w', newline='') as f:
+                writer = csv.writer(f)
+                writer.writerow(['video_name', 'predicted_label', 'confidence', 'timestamp'])
 
     def add_prediction(self, video_name, label, confidence):
         try:
-            self.collection.add({
-                'video_name': str(os.path.basename(video_name)),
-                'predicted_label': str(label),
-                'confidence': float(confidence),
-                'timestamp': firestore.SERVER_TIMESTAMP
-            })
+            with open(self.csv_path, mode='a', newline='') as f:
+                writer = csv.writer(f)
+                writer.writerow([
+                    os.path.basename(video_name),
+                    label,
+                    f"{confidence:.4f}",
+                    pd.Timestamp.now()
+                ])
             return True
         except Exception as e:
-            st.error(f"Failed to save prediction: {str(e)}")
+            st.error(f"❌ Failed to save prediction: {e}")
             return False
 
     def get_predictions(self):
         try:
-            docs = self.collection.order_by('timestamp', direction=firestore.Query.DESCENDING).stream()
-            return pd.DataFrame([doc.to_dict() for doc in docs])
+            return pd.read_csv(self.csv_path)
         except Exception as e:
-            st.error(f"Failed to fetch predictions: {str(e)}")
+            st.error(f"❌ Failed to load prediction history: {e}")
             return pd.DataFrame()
-
-# -------------------- MODEL LOADING --------------------
-@st.cache_resource
-def load_seizure_model():
-    def custom_lstm_layer(**kwargs):
-        kwargs.pop('time_major', None)
-        return LSTM(**kwargs)
-
-    try:
-        model = load_model(MODEL_PATH, custom_objects={'LSTM': custom_lstm_layer})
-        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
-                      loss='categorical_crossentropy',
-                      metrics=['accuracy'])
-        dummy_input = np.zeros((1, SEQUENCE_LENGTH, 1280), dtype=np.float32)
-        model.predict(dummy_input, verbose=0)
-        return model
-    except Exception as e:
-        st.error(f"Model loading failed: {str(e)}")
-        return None
 
 # -------------------- FEATURE EXTRACTOR --------------------
 @st.cache_resource
