@@ -8,25 +8,12 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.layers import LSTM, GlobalAveragePooling2D
 from tensorflow.keras.applications import MobileNetV2
 from tensorflow.keras import Sequential
-import firebase_admin
-from firebase_admin import credentials, firestore
-
-# Optional: Set a limit in config.toml instead of code
-# tf.config.run_functions_eagerly(True)
-
-# -------------------- SETUP --------------------
-if not firebase_admin._apps:
-    cred = credentials.Certificate("resources/serviceAccountKey.json")
-    firebase_admin.initialize_app(cred)
-
-db = firestore.client()
+import csv
 
 # -------------------- CONSTANTS --------------------
 SEQUENCE_LENGTH = 30
 IMAGE_SIZE = (224, 224)
 MODEL_PATH = os.path.join("models", "seizure_lstm_model.h5")
-
-import csv
 
 # -------------------- LOCAL DATABASE CLASS --------------------
 class SeizureDatabase:
@@ -58,6 +45,30 @@ class SeizureDatabase:
         except Exception as e:
             st.error(f"❌ Failed to load prediction history: {e}")
             return pd.DataFrame()
+
+# -------------------- MODEL LOADING --------------------
+@st.cache_resource
+def load_seizure_model():
+    def custom_lstm_layer(**kwargs):
+        kwargs.pop('time_major', None)
+        return LSTM(**kwargs)
+
+    try:
+        model = load_model(
+            MODEL_PATH,
+            custom_objects={'LSTM': custom_lstm_layer}
+        )
+        model.compile(
+            optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+            loss='categorical_crossentropy',
+            metrics=['accuracy']
+        )
+        dummy_input = np.zeros((1, SEQUENCE_LENGTH, 1280), dtype=np.float32)
+        model.predict(dummy_input, verbose=0)
+        return model
+    except Exception as e:
+        st.error(f"Model loading failed: {str(e)}")
+        return None
 
 # -------------------- FEATURE EXTRACTOR --------------------
 @st.cache_resource
