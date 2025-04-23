@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit as st 
 import numpy as np
 import tensorflow as tf
 import cv2
@@ -144,7 +144,7 @@ def predict_seizure(video_path, model, feature_extractor, db):
         confidence = float(avg_pred[class_idx])
 
         db.add_prediction(video_path, label, confidence)
-        return f"Prediction: **{label}** (Confidence: **{confidence:.2%}**)", label, confidence
+        return f"Prediction: **{label}**", label, confidence
 
     except Exception as e:
         return f"❌ Error during prediction: {str(e)}", None, None
@@ -186,7 +186,6 @@ def main():
             if label:
                 st.success(result)
                 st.metric("Prediction", label)
-                st.metric("Confidence", f"{confidence:.2%}")
             else:
                 st.error(result)
 
