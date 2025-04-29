@@ -1,4 +1,4 @@
-import streamlit as st 
+import streamlit as st
 import numpy as np
 import tensorflow as tf
 import cv2
@@ -8,12 +8,12 @@ from tensorflow.keras.layers import LSTM, GlobalAveragePooling2D
 from tensorflow.keras.applications import MobileNetV2
 from tensorflow.keras import Sequential
 
-# Constants
+# ---------------- Constants ----------------
 SEQUENCE_LENGTH = 30
 IMAGE_SIZE = (224, 224)
 MODEL_PATH = os.path.join("models", "seizure_lstm_model.h5")
 
-# ---------- Model Loading ----------
+# ---------------- Load Model ----------------
 @st.cache_resource
 def load_seizure_model():
     def custom_lstm_layer(**kwargs):
@@ -46,7 +46,7 @@ def load_feature_extractor():
     model.predict(dummy_img, verbose=0)
     return model
 
-# ---------- Video Processing ----------
+# ---------------- Video Processing ----------------
 def extract_limited_frames(video_path, max_frames=90, step=3):
     cap = cv2.VideoCapture(video_path)
     frames, frame_count = [], 0
@@ -102,9 +102,10 @@ def predict_seizure(video_path, model, feature_extractor):
         class_idx = int(np.argmax(avg_pred))
 
         label_map = {
-    0: 'No Seizure Detected',
-    1: 'Partial Seizure',
-    2: 'Partial to Generalized Seizure'}
+            0: 'No Seizure Detected',
+            1: 'Partial Seizure',
+            2: 'Partial to Generalized Seizure'
+        }
         label = label_map.get(class_idx, str(class_idx))
         confidence = float(avg_pred[class_idx])
 
@@ -113,13 +114,18 @@ def predict_seizure(video_path, model, feature_extractor):
     except Exception as e:
         return f"❌ Error during prediction: {str(e)}", None, None
 
-# ---------- Streamlit Interface ----------
+# ---------------- Main App ----------------
 def main():
     st.set_page_config(page_title="EpilepSee – Seizure Detection", layout="wide", page_icon="🧠")
     st.sidebar.image("RNN/IMG_6502.png", width=200)
     st.sidebar.title("🧠 EpilepSee")
 
-    page = st.sidebar.radio("Navigation", ["Homepage", "Model"])
+    # Handle navigation
+    if 'go_to_model' in st.session_state and st.session_state['go_to_model']:
+        page = "Model"
+        st.session_state['go_to_model'] = False
+    else:
+        page = st.sidebar.radio("Navigation", ["Homepage", "Model"])
 
     with st.spinner("Loading models..."):
         model = load_seizure_model()
@@ -129,47 +135,40 @@ def main():
         st.error("Critical Error: Could not load required resources")
         return
 
-   if page == "Homepage":
-    st.markdown("""
-    <div style='text-align: center; padding-top: 10px;'>
-        <img src='RNN/IMG_6502.png' width='120' style='margin-bottom: 10px;'/>
-        <h1 style='color: #3e64ff;'>EpilepSee</h1>
-        <h3 style='color: #666;'>Your AI Assistant for Seizure Detection</h3>
-    </div>
-    """, unsafe_allow_html=True)
+    if page == "Homepage":
+        st.markdown("""
+        <div style='text-align: center; padding-top: 10px;'>
+            <img src='RNN/IMG_6502.png' width='120' style='margin-bottom: 10px;'/>
+            <h1 style='color: #3e64ff;'>EpilepSee</h1>
+            <h3 style='color: #666;'>Your AI Assistant for Seizure Detection</h3>
+        </div>
+        """, unsafe_allow_html=True)
 
-    st.markdown("---")
+        st.markdown("---")
 
-    st.markdown("""
-    ### 👁️ What is EpilepSee?
-    **EpilepSee** is an intelligent system designed to assist in the early detection of epileptic seizures through video analysis.
-    It leverages **deep learning models** and **computer vision techniques** to identify visual patterns associated with seizure events.
+        st.markdown("""
+        ### 👁️ What is EpilepSee?
+        **EpilepSee** is an intelligent system designed to assist in the early detection of epileptic seizures through video analysis.
+        It leverages **deep learning models** and **computer vision techniques** to identify visual patterns associated with seizure events.
 
-    - 📹 **Input**: Short video clips of human activity  
-    - 🧠 **Model**: MobileNetV2 for spatial features + LSTM for temporal dynamics  
-    - 🎯 **Output**: Classifies the clip as one of the following:
-        - **No Seizure Detected**
-        - **Partial Seizure**
-        - **Partial to Generalized Seizure**
+        - 📹 **Input**: Short video clips of human activity  
+        - 🧠 **Model**: MobileNetV2 for spatial features + LSTM for temporal dynamics  
+        - 🎯 **Output**: Classifies the clip as one of the following:
+            - **No Seizure Detected**
+            - **Partial Seizure**
+            - **Partial to Generalized Seizure**
+        """)
 
-    This tool is intended to support researchers, neurologists, and caregivers by providing fast, preliminary video analysis for seizure screening.
+        st.markdown("---")
 
-    ---  
-    ### 💡 Why Video-Based Detection?
-    Epileptic seizures often manifest in distinct motor patterns. By analyzing frame-by-frame movements over time, EpilepSee can:
-    - Reduce dependency on manual review
-    - Enhance screening in resource-limited settings
-    - Enable integration with monitoring tools like home surveillance or hospital cameras
+        st.markdown("### 🎥 See EpilepSee in Action")
+        st.video("RNN/IMG_6502.png")  # Replace with your demo file path
 
-    ---  
-    ### 🔬 Built With
-    - **Python**, **TensorFlow**, **OpenCV**
-    - **Streamlit** for UI
-    - Trained on curated seizure video segments
-
-    > This is a prototype and not a substitute for clinical diagnosis.
-    """)
-
+        st.markdown("---")
+        st.markdown("### 🚀 Ready to detect?")
+        if st.button("Start Detection"):
+            st.session_state['go_to_model'] = True
+            st.experimental_rerun()
 
     elif page == "Model":
         st.markdown("## 📤 Upload Video for Seizure Prediction")
