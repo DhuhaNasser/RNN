@@ -162,7 +162,7 @@ def main():
         st.markdown("---")
 
         st.markdown("### 🎥 See EpilepSee in Action")
-        st.video("RNN/IMG_6502.png")  # Replace with your demo file path
+        st.video("RNN/demo_video.mp4")  # Replace with your demo file path
 
         st.markdown("---")
         st.markdown("### 🚀 Ready to detect?")
