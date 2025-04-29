@@ -3,50 +3,17 @@ import numpy as np
 import tensorflow as tf
 import cv2
 import os
-import pandas as pd
 from tensorflow.keras.models import load_model
 from tensorflow.keras.layers import LSTM, GlobalAveragePooling2D
 from tensorflow.keras.applications import MobileNetV2
 from tensorflow.keras import Sequential
-import csv
 
-# -------------------- CONSTANTS --------------------
+# Constants
 SEQUENCE_LENGTH = 30
 IMAGE_SIZE = (224, 224)
 MODEL_PATH = os.path.join("models", "seizure_lstm_model.h5")
 
-# -------------------- LOCAL DATABASE CLASS --------------------
-class SeizureDatabase:
-    def __init__(self, csv_path="seizure_history.csv"):
-        self.csv_path = csv_path
-        if not os.path.exists(self.csv_path):
-            with open(self.csv_path, mode='w', newline='') as f:
-                writer = csv.writer(f)
-                writer.writerow(['video_name', 'predicted_label', 'confidence', 'timestamp'])
-
-    def add_prediction(self, video_name, label, confidence):
-        try:
-            with open(self.csv_path, mode='a', newline='') as f:
-                writer = csv.writer(f)
-                writer.writerow([
-                    os.path.basename(video_name),
-                    label,
-                    f"{confidence:.4f}",
-                    pd.Timestamp.now()
-                ])
-            return True
-        except Exception as e:
-            st.error(f"❌ Failed to save prediction: {e}")
-            return False
-
-    def get_predictions(self):
-        try:
-            return pd.read_csv(self.csv_path)
-        except Exception as e:
-            st.error(f"❌ Failed to load prediction history: {e}")
-            return pd.DataFrame()
-
-# -------------------- MODEL LOADING --------------------
+# ---------- Model Loading ----------
 @st.cache_resource
 def load_seizure_model():
     def custom_lstm_layer(**kwargs):
@@ -70,7 +37,6 @@ def load_seizure_model():
         st.error(f"Model loading failed: {str(e)}")
         return None
 
-# -------------------- FEATURE EXTRACTOR --------------------
 @st.cache_resource
 def load_feature_extractor():
     base_model = MobileNetV2(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
@@ -80,11 +46,10 @@ def load_feature_extractor():
     model.predict(dummy_img, verbose=0)
     return model
 
-# -------------------- VIDEO PROCESSING --------------------
+# ---------- Video Processing ----------
 def extract_limited_frames(video_path, max_frames=90, step=3):
     cap = cv2.VideoCapture(video_path)
-    frames = []
-    frame_count = 0
+    frames, frame_count = [], 0
 
     while True:
         ret, frame = cap.read()
@@ -100,10 +65,7 @@ def extract_limited_frames(video_path, max_frames=90, step=3):
     return frames
 
 def create_sequences(frames, max_sequences=3):
-    sequences = [
-        frames[i:i + SEQUENCE_LENGTH]
-        for i in range(0, len(frames) - SEQUENCE_LENGTH + 1, SEQUENCE_LENGTH)
-    ]
+    sequences = [frames[i:i + SEQUENCE_LENGTH] for i in range(0, len(frames) - SEQUENCE_LENGTH + 1, SEQUENCE_LENGTH)]
     return sequences[:max_sequences]
 
 def extract_features(sequences, feature_extractor):
@@ -121,7 +83,7 @@ def extract_features(sequences, feature_extractor):
 
     return np.array(features, dtype=np.float32)
 
-def predict_seizure(video_path, model, feature_extractor, db):
+def predict_seizure(video_path, model, feature_extractor):
     try:
         frames = extract_limited_frames(video_path)
         if len(frames) < SEQUENCE_LENGTH:
@@ -143,65 +105,69 @@ def predict_seizure(video_path, model, feature_extractor, db):
         label = label_map.get(class_idx, str(class_idx))
         confidence = float(avg_pred[class_idx])
 
-        db.add_prediction(video_path, label, confidence)
         return f"Prediction: **{label}**", label, confidence
 
     except Exception as e:
         return f"❌ Error during prediction: {str(e)}", None, None
 
-# -------------------- STREAMLIT APP --------------------
+# ---------- Streamlit Interface ----------
 def main():
-    st.set_page_config(page_title="Seizure Detection System", layout="wide", page_icon="⚕️")
+    st.set_page_config(page_title="EpilepSee – Seizure Detection", layout="wide", page_icon="🧠")
+    st.sidebar.image("IMG_6502.png", width=200)
+    st.sidebar.title("🧠 EpilepSee")
 
-    with st.spinner("Loading resources..."):
+    page = st.sidebar.radio("Navigation", ["Homepage", "Model"])
+
+    with st.spinner("Loading models..."):
         model = load_seizure_model()
         feature_extractor = load_feature_extractor()
-        seizure_db = SeizureDatabase()
 
     if model is None:
         st.error("Critical Error: Could not load required resources")
-        st.stop()
+        return
 
-    st.title("⚡ Seizure Detection from Video")
-    st.markdown("Upload a video file to analyze for seizure activity.")
+    if page == "Homepage":
+        st.markdown("## 🧠 Welcome to EpilepSee")
+        st.markdown("""
+        EpilepSee is an AI-powered system designed to analyze **video recordings** and detect signs of epileptic seizures.  
+        It uses a combination of **MobileNetV2 for feature extraction** and **LSTM for temporal analysis** of video frame sequences.
 
-    uploaded_file = st.file_uploader("Choose a video file", type=["mp4", "avi", "mov"])
+        ### 🔍 Prediction Categories:
+        - **No_Seizure**: Normal movement  
+        - **P**: Partial seizure  
+        - **PG**: Partial to Generalized seizure
+        """)
 
-    if uploaded_file:
-        temp_dir = "temp"
-        os.makedirs(temp_dir, exist_ok=True)
-        video_path = os.path.join(temp_dir, uploaded_file.name)
+    elif page == "Model":
+        st.markdown("## 📤 Upload Video for Seizure Prediction")
+        uploaded_file = st.file_uploader("Upload a video", type=["mp4", "avi", "mov"])
 
-        with open(video_path, "wb") as f:
-            f.write(uploaded_file.getbuffer())
+        if uploaded_file:
+            temp_dir = "temp"
+            os.makedirs(temp_dir, exist_ok=True)
+            video_path = os.path.join(temp_dir, uploaded_file.name)
 
-        col1, col2 = st.columns(2)
-        with col1:
-            st.video(video_path)
+            with open(video_path, "wb") as f:
+                f.write(uploaded_file.getbuffer())
 
-        with col2:
-            with st.spinner("Analyzing video..."):
-                result, label, confidence = predict_seizure(video_path, model, feature_extractor, seizure_db)
+            col1, col2 = st.columns(2)
+            with col1:
+                st.video(video_path)
 
-            if label:
-                st.success(result)
-                st.metric("Prediction", label)
-            else:
-                st.error(result)
+            with col2:
+                with st.spinner("Analyzing video..."):
+                    result, label, confidence = predict_seizure(video_path, model, feature_extractor)
 
-        try:
-            os.remove(video_path)
-        except:
-            pass
+                if label:
+                    st.success(result)
+                    st.metric("Prediction", label)
+                else:
+                    st.error(result)
 
-    st.sidebar.header("Prediction History")
-    if st.sidebar.button("Refresh History"):
-        history = seizure_db.get_predictions()
-        if not history.empty:
-            st.sidebar.dataframe(history)
-            st.sidebar.download_button("Download CSV", history.to_csv(index=False), "seizure_history.csv")
-        else:
-            st.sidebar.info("No history available")
+            try:
+                os.remove(video_path)
+            except:
+                pass
 
 if __name__ == "__main__":
     main()
