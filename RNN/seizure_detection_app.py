@@ -87,15 +87,15 @@ def predict_seizure(video_path, model, feature_extractor):
     try:
         frames = extract_limited_frames(video_path)
         if len(frames) < SEQUENCE_LENGTH:
-            return "❌ Error: Video too short (needs at least 30 frames)", None, None
+            return "\u274c Error: Video too short (needs at least 30 frames)", None, None
 
         sequences = create_sequences(frames)
         if not sequences:
-            return "❌ Error: Could not create valid sequences", None, None
+            return "\u274c Error: Could not create valid sequences", None, None
 
         features = extract_features(sequences, feature_extractor)
         if features.size == 0:
-            return "❌ Error: Feature extraction failed", None, None
+            return "\u274c Error: Feature extraction failed", None, None
 
         preds = model.predict(features, verbose=0)
         avg_pred = np.mean(preds, axis=0)
@@ -112,15 +112,14 @@ def predict_seizure(video_path, model, feature_extractor):
         return f"Prediction: **{label}**", label, confidence
 
     except Exception as e:
-        return f"❌ Error during prediction: {str(e)}", None, None
+        return f"\u274c Error during prediction: {str(e)}", None, None
 
 # ---------------- Main App ----------------
 def main():
-    st.set_page_config(page_title="EpilepSee – Seizure Detection", layout="wide", page_icon="🧠")
+    st.set_page_config(page_title="EpilepSee – Seizure Detection", layout="wide", page_icon="\ud83e\udde0")
     st.sidebar.image("RNN/IMG_6502.png", width=200)
-    st.sidebar.title("🧠 EpilepSee")
+    st.sidebar.title("\ud83e\udde0 EpilepSee")
 
-    # Handle navigation
     if 'go_to_model' in st.session_state and st.session_state['go_to_model']:
         page = "Model"
         st.session_state['go_to_model'] = False
@@ -136,42 +135,76 @@ def main():
         return
 
     if page == "Homepage":
-        st.markdown("""
-        <div style='text-align: center; padding-top: 10px;'>
-            <img src='RNN/IMG_6502.png' width='120' style='margin-bottom: 10px;'/>
-            <h1 style='color: #3e64ff;'>EpilepSee</h1>
-            <h3 style='color: #666;'>Your AI Assistant for Seizure Detection</h3>
-        </div>
-        """, unsafe_allow_html=True)
-
+        st.image("RNN/IMG_6502.png", width=120)
+        st.markdown("<h1 style='text-align: center; color: #3e64ff;'>EpilepSee</h1>", unsafe_allow_html=True)
+        st.markdown("<h4 style='text-align: center; color: gray;'>Your AI Assistant for Seizure Detection</h4>", unsafe_allow_html=True)
         st.markdown("---")
 
+        st.markdown("### \ud83d\udd23 What is EpilepSee?")
         st.markdown("""
-        ### 👁️ What is EpilepSee?
-        **EpilepSee** is an intelligent system designed to assist in the early detection of epileptic seizures through video analysis.
-        It leverages **deep learning models** and **computer vision techniques** to identify visual patterns associated with seizure events.
+        **EpilepSee** is an intelligent video analysis tool designed to support the **early detection of epileptic seizures**.
+        It uses state-of-the-art **deep learning techniques** combining:
 
-        - 📹 **Input**: Short video clips of human activity  
-        - 🧠 **Model**: MobileNetV2 for spatial features + LSTM for temporal dynamics  
-        - 🎯 **Output**: Classifies the clip as one of the following:
-            - **No Seizure Detected**
-            - **Partial Seizure**
-            - **Partial to Generalized Seizure**
+        - \ud83d\udcf9 **Video Input** – Upload clips of observed activity  
+        - \ud83e\udde0 **Model** – MobileNetV2 + LSTM to analyze spatial-temporal motion  
+        - \ud83c\udfaf **Prediction Output** –  
+          - `No Seizure Detected`  
+          - `Partial Seizure`  
+          - `Partial to Generalized Seizure`
+        """)
+
+        st.markdown("### \ud83d\udca1 Why EpilepSee?")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.success("\ud83d\udd0e Automated Monitoring\n\nReduce the need for manual review of long surveillance videos.")
+        with col2:
+            st.info("\ud83e\udde0 Deep Learning Powered\n\nAccurate frame-by-frame motion analysis.")
+        with col3:
+            st.warning("\ud83c\udfe5 Clinical Support Tool\n\nHelps caregivers and researchers in early screening.")
+
+        st.markdown("---")
+        st.markdown("### \ud83e\uddec What is Epilepsy?")
+        st.markdown("""
+        **Epilepsy** is a neurological disorder characterized by **recurrent seizures**—sudden surges of electrical activity in the brain.  
+        These seizures can range from mild staring spells to intense convulsions and loss of consciousness.
+
+        \ud83d\udd0d **Did you know?**  
+        - Over **50 million people** globally live with epilepsy  
+        - **Early detection and monitoring** are critical for better management  
+        - Many patients go **undiagnosed in low-resource settings**
+
+        EpilepSee aims to contribute toward making **preliminary screening more accessible** through AI-driven video analysis.
         """)
 
         st.markdown("---")
-
-        st.markdown("### 🎥 See EpilepSee in Action")
-        st.video("RNN/demo_video.mp4")  # Replace with your demo file path
+        st.markdown("### \ud83c\udfa5 Demo: How EpilepSee Works")
+        st.components.v1.html(
+            """
+            <video width="700" autoplay loop muted style="border-radius: 10px;">
+              <source src="RNN/demo_video.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+            """,
+            height=400,
+        )
 
         st.markdown("---")
-        st.markdown("### 🚀 Ready to detect?")
+        st.markdown("### \ud83d\ude80 Try It Now!")
+        st.markdown("Upload your video and let EpilepSee analyze it in seconds.")
         if st.button("Start Detection"):
             st.session_state['go_to_model'] = True
             st.experimental_rerun()
 
+        st.markdown("""
+        <div style='text-align: center; font-size: 0.9em; color: gray; padding-top: 20px;'>
+            <p><b>EpilepSee</b> is a research prototype built for educational and awareness purposes only.</p>
+            <p>This is not a medical device and should not replace clinical diagnosis.</p>
+            <p>Made with ❤️ using Python, TensorFlow, and Streamlit</p>
+        </div>
+        """, unsafe_allow_html=True)
+
     elif page == "Model":
-        st.markdown("## 📤 Upload Video for Seizure Prediction")
+        st.markdown("## \ud83d\udcc4 Upload Video for Seizure Prediction")
         uploaded_file = st.file_uploader("Upload a video", type=["mp4", "avi", "mov"])
 
         if uploaded_file:
