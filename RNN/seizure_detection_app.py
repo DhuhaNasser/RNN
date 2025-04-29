@@ -116,7 +116,7 @@ def predict_seizure(video_path, model, feature_extractor):
 
 # ---------------- Main App ----------------
 def main():
-    st.set_page_config(page_title="EpilepSee – Seizure Detection", layout="wide", page_icon="\ud83e\udde0")
+    st.set_page_config(page_title="EpilepSee – Seizure Detection", layout="wide", page_icon="⚕️")
     st.sidebar.image("RNN/IMG_6502.png", width=200)
     st.sidebar.title("\ud83e\udde0 EpilepSee")
 
