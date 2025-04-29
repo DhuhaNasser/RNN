@@ -120,11 +120,7 @@ def main():
     st.sidebar.image("RNN/IMG_6502.png", width=200)
     st.sidebar.title("EpilepSee")
 
-    if 'go_to_model' in st.session_state and st.session_state['go_to_model']:
-        page = "Model"
-        st.session_state['go_to_model'] = False
-    else:
-        page = st.sidebar.radio("Navigation", ["Homepage", "Model"])
+    page = st.sidebar.radio("Navigation", ["Homepage", "Model"])
 
     with st.spinner("Loading models..."):
         model = load_seizure_model()
@@ -135,9 +131,14 @@ def main():
         return
 
     if page == "Homepage":
-        st.image("RNN/IMG_6502.png", width=120)
-        st.markdown("<h1 style='text-align: center; color: #3e64ff;'>EpilepSee</h1>", unsafe_allow_html=True)
-        st.markdown("<h4 style='text-align: center; color: gray;'>Your AI Assistant for Seizure Detection</h4>", unsafe_allow_html=True)
+        st.markdown("""
+        <div style='text-align: center;'>
+            <img src='https://raw.githubusercontent.com/yourusername/yourrepo/main/RNN/IMG_6502.png' width='120'>
+            <h1 style='color: #3e64ff;'>EpilepSee</h1>
+            <h3 style='color: gray;'>Your AI Assistant for Seizure Detection</h3>
+        </div>
+        """, unsafe_allow_html=True)
+
         st.markdown("---")
 
         st.markdown("### What is EpilepSee?")
@@ -178,32 +179,16 @@ def main():
 
         st.markdown("---")
         st.markdown("### Demo: How EpilepSee Works")
-        st.components.v1.html(
-            """
-            <video width=\"700\" autoplay loop muted style=\"border-radius: 10px;\">
-              <source src=\"RNN/demo_video.mp4\" type=\"video/mp4\">
-              Your browser does not support the video tag.
-            </video>
-            """,
-            height=400,
-        )
+        st.video("RNN/demo_video.mp4")
 
         st.markdown("---")
         st.markdown("### Try It Now!")
         st.markdown("Upload your video and let EpilepSee analyze it in seconds.")
         if st.button("Start Detection"):
-            st.session_state['go_to_model'] = True
-            st.experimental_rerun()
+            st.session_state["go_to_model"] = True
 
-        st.markdown("""
-        <div style='text-align: center; font-size: 0.9em; color: gray; padding-top: 20px;'>
-            <p><b>EpilepSee</b> is a research prototype built for educational and awareness purposes only.</p>
-            <p>This is not a medical device and should not replace clinical diagnosis.</p>
-            <p>Made with love using Python, TensorFlow, and Streamlit</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-    elif page == "Model":
+    elif page == "Model" or st.session_state.get("go_to_model"):
+        st.session_state["go_to_model"] = False
         st.markdown("## Upload Video for Seizure Prediction")
         uploaded_file = st.file_uploader("Upload a video", type=["mp4", "avi", "mov"])
 
@@ -235,4 +220,6 @@ def main():
                 pass
 
 if __name__ == "__main__":
+    if "go_to_model" not in st.session_state:
+        st.session_state["go_to_model"] = False
     main()
