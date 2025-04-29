@@ -101,7 +101,10 @@ def predict_seizure(video_path, model, feature_extractor):
         avg_pred = np.mean(preds, axis=0)
         class_idx = int(np.argmax(avg_pred))
 
-        label_map = {0: 'No_Seizure', 1: 'P', 2: 'PG'}
+        label_map = {
+    0: 'No Seizure Detected',
+    1: 'Partial Seizure',
+    2: 'Partial to Generalized Seizure'}
         label = label_map.get(class_idx, str(class_idx))
         confidence = float(avg_pred[class_idx])
 
@@ -126,17 +129,47 @@ def main():
         st.error("Critical Error: Could not load required resources")
         return
 
-    if page == "Homepage":
-        st.markdown("## 🧠 Welcome to EpilepSee")
-        st.markdown("""
-        EpilepSee is an AI-powered system designed to analyze **video recordings** and detect signs of epileptic seizures.  
-        It uses a combination of **MobileNetV2 for feature extraction** and **LSTM for temporal analysis** of video frame sequences.
+   if page == "Homepage":
+    st.markdown("""
+    <div style='text-align: center; padding-top: 10px;'>
+        <img src='RNN/IMG_6502.png' width='120' style='margin-bottom: 10px;'/>
+        <h1 style='color: #3e64ff;'>EpilepSee</h1>
+        <h3 style='color: #666;'>Your AI Assistant for Seizure Detection</h3>
+    </div>
+    """, unsafe_allow_html=True)
 
-        ### 🔍 Prediction Categories:
-        - **No_Seizure**: Normal movement  
-        - **P**: Partial seizure  
-        - **PG**: Partial to Generalized seizure
-        """)
+    st.markdown("---")
+
+    st.markdown("""
+    ### 👁️ What is EpilepSee?
+    **EpilepSee** is an intelligent system designed to assist in the early detection of epileptic seizures through video analysis.
+    It leverages **deep learning models** and **computer vision techniques** to identify visual patterns associated with seizure events.
+
+    - 📹 **Input**: Short video clips of human activity  
+    - 🧠 **Model**: MobileNetV2 for spatial features + LSTM for temporal dynamics  
+    - 🎯 **Output**: Classifies the clip as one of the following:
+        - **No Seizure Detected**
+        - **Partial Seizure**
+        - **Partial to Generalized Seizure**
+
+    This tool is intended to support researchers, neurologists, and caregivers by providing fast, preliminary video analysis for seizure screening.
+
+    ---  
+    ### 💡 Why Video-Based Detection?
+    Epileptic seizures often manifest in distinct motor patterns. By analyzing frame-by-frame movements over time, EpilepSee can:
+    - Reduce dependency on manual review
+    - Enhance screening in resource-limited settings
+    - Enable integration with monitoring tools like home surveillance or hospital cameras
+
+    ---  
+    ### 🔬 Built With
+    - **Python**, **TensorFlow**, **OpenCV**
+    - **Streamlit** for UI
+    - Trained on curated seizure video segments
+
+    > This is a prototype and not a substitute for clinical diagnosis.
+    """)
+
 
     elif page == "Model":
         st.markdown("## 📤 Upload Video for Seizure Prediction")
