@@ -180,16 +180,7 @@ def main():
 
         st.markdown("---")
         st.markdown("### Demo: How EpilepSee Works")
-        st.image("RNN/demo_video.gif", caption="How EpilepSee Works", use_column_width=True)
-
-        st.markdown("---")
-        st.markdown("### Try It Now!")
-        st.markdown("Upload your video and let EpilepSee analyze it in seconds.")
-        if st.button("Start Detection"):
-            st.session_state["go_to_model"] = True
-
-    if st.session_state.get("go_to_model"):
-        st.experimental_rerun()
+        st.image("RNN/demo.gif", caption="How EpilepSee Works")
 
     elif page == "Model":
         st.session_state["go_to_model"] = False
