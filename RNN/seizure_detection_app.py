@@ -180,7 +180,7 @@ def main():
 
         st.markdown("---")
         st.markdown("### Demo: How EpilepSee Works")
-        st.image("RNN/demo.gif", caption="How EpilepSee Works")
+        st.image("RNN/demo_video.gif", caption="How EpilepSee Works")
 
     elif page == "Model":
         st.session_state["go_to_model"] = False
