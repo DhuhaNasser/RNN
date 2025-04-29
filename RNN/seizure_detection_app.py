@@ -180,7 +180,7 @@ def main():
 
         st.markdown("---")
         st.markdown("### Demo: How EpilepSee Works")
-        st.image("RNN/demo.gif", caption="How EpilepSee Works", use_column_width=True)
+        st.image("RNN/demo_video.gif", caption="How EpilepSee Works", use_column_width=True)
 
         st.markdown("---")
         st.markdown("### Try It Now!")
