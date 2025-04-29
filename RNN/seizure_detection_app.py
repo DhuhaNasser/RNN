@@ -185,7 +185,7 @@ def main():
 
         st.markdown("---")
         st.markdown("### Demo: How EpilepSee Works")
-        st.video("RNN/demo_video.gif")
+        st.image("RNN/demo_video.gif")
 
         st.markdown("---")
         st.markdown("### Try It Now!")
