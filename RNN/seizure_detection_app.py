@@ -120,13 +120,7 @@ def main():
     st.sidebar.image("RNN/IMG_6502.png", width=200)
     st.sidebar.title("EpilepSee")
 
-    if "go_to_model" not in st.session_state:
-        st.session_state["go_to_model"] = False
-
-    if st.session_state.get("go_to_model"):
-        page = "Model"
-    else:
-        page = st.sidebar.radio("Navigation", ["Homepage", "Model"])
+    page = st.sidebar.radio("Navigation", ["Homepage", "Model"])
 
     with st.spinner("Loading models..."):
         model = load_seizure_model()
@@ -139,7 +133,7 @@ def main():
     if page == "Homepage":
         st.markdown("""
         <div style='text-align: center;'>
-            <img src='RNN/IMG_6502.png' width='120'>
+            <img src='https://raw.githubusercontent.com/yourusername/yourrepo/main/RNN/IMG_6502.png' width='120'>
             <h1 style='color: #3e64ff;'>EpilepSee</h1>
             <h3 style='color: gray;'>Your AI Assistant for Seizure Detection</h3>
         </div>
@@ -192,9 +186,8 @@ def main():
         st.markdown("Upload your video and let EpilepSee analyze it in seconds.")
         if st.button("Start Detection"):
             st.session_state["go_to_model"] = True
-            st.experimental_rerun()
 
-    elif page == "Model":
+    elif page == "Model" or st.session_state.get("go_to_model"):
         st.session_state["go_to_model"] = False
         st.markdown("## Upload Video for Seizure Prediction")
         uploaded_file = st.file_uploader("Upload a video", type=["mp4", "avi", "mov"])
@@ -227,4 +220,6 @@ def main():
                 pass
 
 if __name__ == "__main__":
+    if "go_to_model" not in st.session_state:
+        st.session_state["go_to_model"] = False
     main()
