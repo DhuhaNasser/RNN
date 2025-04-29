@@ -113,7 +113,7 @@ def predict_seizure(video_path, model, feature_extractor):
 # ---------- Streamlit Interface ----------
 def main():
     st.set_page_config(page_title="EpilepSee – Seizure Detection", layout="wide", page_icon="🧠")
-    st.sidebar.image("IMG_6502.png", width=200)
+    st.sidebar.image("RNN/IMG_6502.png", width=200)
     st.sidebar.title("🧠 EpilepSee")
 
     page = st.sidebar.radio("Navigation", ["Homepage", "Model"])
