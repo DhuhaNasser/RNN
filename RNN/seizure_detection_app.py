@@ -180,8 +180,8 @@ def main():
         st.markdown("### Demo: How EpilepSee Works")
         st.components.v1.html(
             """
-            <video width="700" autoplay loop muted style="border-radius: 10px;">
-              <source src="RNN/demo_video.mp4" type="video/mp4">
+            <video width=\"700\" autoplay loop muted style=\"border-radius: 10px;\">
+              <source src=\"RNN/demo_video.mp4\" type=\"video/mp4\">
               Your browser does not support the video tag.
             </video>
             """,
