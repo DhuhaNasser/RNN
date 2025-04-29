@@ -120,7 +120,13 @@ def main():
     st.sidebar.image("RNN/IMG_6502.png", width=200)
     st.sidebar.title("EpilepSee")
 
-    page = st.sidebar.radio("Navigation", ["Homepage", "Model"])
+    if "go_to_model" not in st.session_state:
+        st.session_state["go_to_model"] = False
+
+    if st.session_state.get("go_to_model"):
+        page = "Model"
+    else:
+        page = st.sidebar.radio("Navigation", ["Homepage", "Model"])
 
     with st.spinner("Loading models..."):
         model = load_seizure_model()
@@ -131,13 +137,8 @@ def main():
         return
 
     if page == "Homepage":
-        st.markdown("""
-        <div style='text-align: center;'>
-            <img src='https://raw.githubusercontent.com/yourusername/yourrepo/main/RNN/IMG_6502.png' width='120'>
-            <h1 style='color: #3e64ff;'>EpilepSee</h1>
-            <h3 style='color: gray;'>Your AI Assistant for Seizure Detection</h3>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("<h1 style='text-align: center; color: #3e64ff;'>EpilepSee</h1>", unsafe_allow_html=True)
+        st.markdown("<h3 style='text-align: center; color: gray;'>Your AI Assistant for Seizure Detection</h3>", unsafe_allow_html=True)
 
         st.markdown("---")
 
@@ -179,7 +180,7 @@ def main():
 
         st.markdown("---")
         st.markdown("### Demo: How EpilepSee Works")
-        st.video("RNN/demo_video.mp4")
+        st.image("RNN/demo.gif", caption="How EpilepSee Works", use_column_width=True)
 
         st.markdown("---")
         st.markdown("### Try It Now!")
@@ -187,7 +188,10 @@ def main():
         if st.button("Start Detection"):
             st.session_state["go_to_model"] = True
 
-    elif page == "Model" or st.session_state.get("go_to_model"):
+    if st.session_state.get("go_to_model"):
+        st.experimental_rerun()
+
+    elif page == "Model":
         st.session_state["go_to_model"] = False
         st.markdown("## Upload Video for Seizure Prediction")
         uploaded_file = st.file_uploader("Upload a video", type=["mp4", "avi", "mov"])
@@ -220,6 +224,4 @@ def main():
                 pass
 
 if __name__ == "__main__":
-    if "go_to_model" not in st.session_state:
-        st.session_state["go_to_model"] = False
     main()
